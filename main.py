@@ -226,11 +226,11 @@ def sec3():
 #sidemenu
 sidemenu = Frame(root, bg=side)
 sidemenu.place(x=0, y=0, width=220, height=600)
-ub = ImageTk.PhotoImage(Image.open('/home/pi/ATPCangar/Pameran/ub.png').resize((80,80), Image.ANTIALIAS))
+ub = ImageTk.PhotoImage(Image.open('F:/PERKODINGAN/BACKUP/Cangar/Pameran/ub.png').resize((80,80), Image.LANCZOS))
 Label(sidemenu, image=ub, bg=side).place(x=(220/2)-30, y=30)
-iot = ImageTk.PhotoImage(Image.open('/home/pi/ATPCangar/Pameran/iot black.png').resize((60,60), Image.ANTIALIAS))
+iot = ImageTk.PhotoImage(Image.open('F:/PERKODINGAN/BACKUP/Cangar/Pameran/iot black.png').resize((60,60), Image.LANCZOS))
 Label(sidemenu, image=iot, bg=side).place(x=(220/2)-80, y=130)
-ubtech = ImageTk.PhotoImage(Image.open('/home/pi/ATPCangar/Pameran/ubtech.png').resize((60,60), Image.ANTIALIAS))
+ubtech = ImageTk.PhotoImage(Image.open('F:/PERKODINGAN/BACKUP/Cangar/Pameran/ubtech.png').resize((60,60), Image.LANCZOS))
 Label(sidemenu, image=ubtech, bg=side).place(x=(220/2)+20, y=130)
 
 #media
