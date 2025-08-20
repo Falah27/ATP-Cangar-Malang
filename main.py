@@ -1,219 +1,249 @@
-from random import randint
+import tkinter
 import pyrebase
-import tkinter 
+import PIL
 from tkinter import *
 from tkinter import ttk
-from turtle import right
+from tkinter import colorchooser
 from PIL import Image, ImageTk
 import cv2
 
 config = {
-  "apiKey": "AIzaSyAd2SetY7zJmQNWECi3f6CjOJXE0bm75ik",
-  "authDomain": "cangar-9e508.firebaseapp.com",
-  "databaseURL": "https://cangar-9e508-default-rtdb.asia-southeast1.firebasedatabase.app",
-  "projectId": "cangar-9e508",
-  "storageBucket": "cangar-9e508.appspot.com",
-  "messagingSenderId": "972857343706",
-  "appId": "1:972857343706:web:8741c85ea60dba80c66fe3",
-  "measurementId": "G-XLS917ZKX4"
-}
+  "apiKey": "AIzaSyDRq6JqMAtQiKvOg6mgILsr7ZQ42gMBV5A",
+  "authDomain": "cangar-europa-server.firebaseapp.com",
+  "databaseURL": "https://cangar-europa-server-default-rtdb.firebaseio.com",
+  "projectId": "cangar-europa-server",
+  "storageBucket": "cangar-europa-server.appspot.com",
+  "messagingSenderId": "671201908053",
+  "appId": "1:671201908053:web:99765d65cbb131dda2cbdc"
+};
 
 firebase = pyrebase.initialize_app(config)
 db = firebase.database()
 
 #color
-dark = '#2C3333'
-grey = '#395B64'
-smooth = '#A5C9CA'
-light = '#E7F6F2'
-white = 'white'
-bg_side = white
-bg_menu = white
+bg = '#52734D'
+side = '#FEFFDE'
+menu = '#DDFFBC'
+ot = '#91C788'
 
 #font
-judul= "poppins 18 bold"
-sub = "poppins 12 bold"
-desk = "poppins 10 bold"
-
-#size 
-height_top_frame = 60
-width_top_frame = 720
-width_side_menu = 200
-height_side_menu = 600
-height_menu_frame = 520
-width_menu_frame = 700
+p18 = 'poppins 18 bold'
+p16 = 'poppins 16 bold'
+p14 = 'poppins 14 bold'
+p12 = 'poppins 12 bold'
+p10 = 'poppins 10 bold'
 
 root = Tk()
-root.geometry('1050x600')
-root.state('zoomed')
-root.config(bg=smooth)
+root.geometry('1020x600')
+root.config(bg=menu)
+root.title('AGROTECHNO PARK UB APPS')
+media = Frame(root)
 
-root.title('ARGROTECHNO PARK UB APPS')
+class MenuFrame(Frame):
+    def __init__(self, the_window):
+        super().__init__()
+        self['width']=780
+        self['height']=520
+        self['bg']=ot
 
-def profile():
-    global menu
-    menu.destroy()
-    profile = Frame(root,bg=bg_menu, width=width_menu_frame, height=height_menu_frame)
-    profile.place(x=310, y=70)
-    e1 = Label(profile, text="PROFILE", font="System 30", bg=bg_menu, fg=grey).place(x=650/2,y=400/2)
-    menu = profile
+class WebcamChoose():
+    def __init__(self, window, cap):
+        super().__init__()
+        self.window = window
+        self.cap = cap
+        # self.width = self.cap.get(cv2.CAP_PROP_FRAME_WIDTH)
+        # self.height = self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
+        self.interval = 20 
+        self.label = Label(self.window)
+        self.label.place(x=10, y=10)
+        self.update_image()
 
-def monitoring():
-    global menu
-    menu.destroy()
-    monitoring= Frame(root,bg=bg_menu, width=width_menu_frame, height=height_menu_frame)
-    monitoring.place(x=310, y=70)
+    def update_image(self):
+        _, self.frame = self.cap.read()
+        self.frame = cv2.flip(self.frame, 0)
+        self.frame = cv2.resize(self.frame, (480, 270))
+        self.image = cv2.cvtColor(self.frame, cv2.COLOR_BGR2RGB) 
+        self.image = Image.fromarray(self.image) 
+        self.image = ImageTk.PhotoImage(self.image) 
+        self.label.imgtk = self.image
+        self.label.configure(image=self.image)
+        self.window.after(self.interval, self.update_image)
 
-    items = "Cam1", "Cam2","Cam3","Cam4"
-    change_cam = ttk.Combobox(monitoring, values=items, font="Poppins 10 bold")
-    change_cam.current(0)
-    change_cam.place(x=50, y=25, width=150)
+class ColorPicker():
+    def __init__(self, window):
+        super().__init__()
+        self.window = window
 
-    vid_cam = Label(monitoring)
+        Button(self.window, text='Pick Color', width=10, border=0, bd=0, font=p12, command=self.color).place(x=10, y=300)      
 
-    def pil_cam(img, vid_cam):
-        img = cv2.resize(img, (480,270))
-        img = cv2.flip(img, 1)
-        image = Image.fromarray(img)
-        pic = ImageTk.PhotoImage(image)
-        vid_cam.configure(image=pic)
-        vid_cam.image = pic
-        vid_cam.place(x=50, y=100)
+    def color(self):
+        my_color = colorchooser.askcolor()
+        string_color = my_color[1]
+        r = int(my_color[0][0])
+        g = int(my_color[0][1])
+        b = int(my_color[0][2])
+        rgb = '( ' + str(r) + ' , ' + str(g) + ' , ' + str(b) + ' )'
+        rgb_mode = Label(self.window, text=rgb, width=15, height=2, bg=string_color)
+        rgb_mode.place(x=10, y=350)
+        hex_mode = Label(self.window, text=my_color[1], width=15,height=2, bg=string_color)
+        hex_mode.place(x=10, y=390)
+        data = {"rgb" : rgb , "hex" : my_color[1]}
+        db.child("pameran").child("set color").set(data)
 
-    def choose():
-        global cap1, cap2, cap3, cap4
-        if change_cam.get() == "Cam1":
-            cap1 = cv2.VideoCapture(1)
-            cap2 = cv2.VideoCapture()
-            cap3 = cv2.VideoCapture()
-            cap4 = cv2.VideoCapture()
+class Setting():
+    def __init__(self, window):
+        super().__init__()
+        self.window = window
 
-        if change_cam.get() == "Cam2":
-            cap2 = cv2.VideoCapture(0)
-            cap1 = cv2.VideoCapture()
-            cap3 = cv2.VideoCapture()
-            cap4 = cv2.VideoCapture()
+        move = Label(self.window, text='Move Robot', width=10, font=p14, bg=ot)
+        move.place(x=200, y=303)
+        
+        pump = Label(self.window, text='PUMP', width=10, font=p14, bg=ot)
+        pump.place(x=500, y=303)
+        
+    def move(self):
+        mov1 = Button(self.window, text='MEDIA 1', border=0, cursor='hand2', bd=0, font=p12, width=10, command=self.media1)
+        mov1.place(x=200, y=350)
 
-        if change_cam.get() == "Cam3":
-            cap3 = cv2.VideoCapture(3)
-            cap2 = cv2.VideoCapture()
-            cap1 = cv2.VideoCapture()
-            cap4 = cv2.VideoCapture()
+        mov2 = Button(self.window, text='MEDIA 2', border=0, cursor='hand2', bd=0, font=p12, width=10, command=self.media2)
+        mov2.place(x=200, y=400)
 
-        if change_cam.get() == "Cam4":
-            cap4 = cv2.VideoCapture(4)
-            cap2 = cv2.VideoCapture()
-            cap3 = cv2.VideoCapture()
-            cap1 = cv2.VideoCapture()
-        show()
+        mov3 = Button(self.window, text='MEDIA 3', border=0, cursor='hand2', bd=0, font=p12, width=10, command=self.media3)
+        mov3.place(x=350, y=350)
 
-    switch_btn = Button(monitoring, text="SWITCH", font="Poppins 10", command=choose)
-    switch_btn.place(x=250, y=25, width=100)
+        mov2 = Button(self.window, text='HOME', border=0, cursor='hand2', bd=0, font=p12, width=10, command=self.home)
+        mov2.place(x=350, y=400)
+        
+        pump_on = Button(self.window, text='ON', border=0, cursor='hand2', bd=0, font=p12, width=5, command=self.on_pump)
+        pump_on.place(x=600, y=350)
+        
+        pump_off = Button(self.window, text='OFF', border=0, cursor='hand2', bd=0, font=p12, width=5, command=self.off_pump)
+        pump_off.place(x=600, y=400)
+    
+    def media1(self):
+        db.child("pameran").child('move').set(1)
+    def media2(self):
+        db.child("pameran").child('move').set(2)   
+    def media3(self):
+        db.child("pameran").child('move').set(3)
+    def home(self):
+        db.child("pameran").child('move').set(0)
+    def on_pump(self):
+        db.child("pameran").child('pump').set(1)
+    def off_pump(self):
+        db.child("pameran").child('pump').set(0)
 
-    mode = "RGB", "GRAY", "LAB", "HVS", "HLS", "Canny"
-    change_mode = ttk.Combobox(monitoring, values=mode, font="Poppins 10 bold")
-    change_mode.place(x=400, y=25, width=150)
-    change_mode.current(0)
+class ReadSensor():
+    def __init__(self, window, media):
+        super().__init__()
+        self.window = window
+        self.media = media
+        
+        self.frame = Frame(self.window, width=270, height=270, bg=menu) 
+        self.frame.place(x=500, y=10)
+        
+        self.label_media = Label(self.frame, text=self.media, font="poppins 20 bold", bg=menu)
+        self.label_media.place(x=10, y=5)
+        
+        self.label_lux = Label(self.frame, text="LUX", font=p14, bg=menu, width=9)
+        self.label_lux.place(x=5, y=50)
 
-    def show():
-        if change_cam.get() == "Cam1":
-            _, frame = cap1.read()
-        if change_cam.get() == "Cam2":
-            _, frame = cap2.read()
-        if change_cam.get() == "Cam3":
-            _, frame = cap3.read()
-        if change_cam.get() == "Cam4":
-            _, frame = cap4.read()
-            
-        rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        gray = cv2.cvtColor(rgb, cv2.COLOR_BGR2GRAY)
-        lab = cv2.cvtColor(rgb, cv2.COLOR_BGR2Lab)
-        hsv = cv2.cvtColor(rgb, cv2.COLOR_BGR2HSV)
-        hls = cv2.cvtColor(rgb, cv2.COLOR_BGR2HLS)
-        canny = cv2.Canny(gray,100,200)
+        self.label_hum = Label(self.frame, text="Humidity", font=p14, bg=menu, width=9)
+        self.label_hum.place(x=130, y=50)
+        
+        self.label_lux = Label(self.frame, text="Suhu", font=p14, bg=menu, width=9)
+        self.label_lux.place(x=5, y=125)
+        
+        self.label_tdsin = Label(self.frame, text="TDS-in", font=p14, bg=menu, width=9)
+        self.label_tdsin.place(x=5, y=200)
 
-        if change_mode.get()=="RGB":
-            pil_cam(rgb, vid_cam)
-        if change_mode.get()=="GRAY":
-            pil_cam(gray, vid_cam)    
-        if change_mode.get()=="LAB":
-            pil_cam(lab, vid_cam)    
-        if change_mode.get()=="HSV":
-            pil_cam(hsv, vid_cam)    
-        if change_mode.get()=="HLS":
-            pil_cam(hls, vid_cam)    
-        if change_mode.get()=="Canny":
-            pil_cam(canny, vid_cam)
-        vid_cam.after(30, show)
+        self.label_tdsout = Label(self.frame, text="TDS-out", font=p14, bg=menu, width=9)
+        self.label_tdsout.place(x=130, y=200)
+        
+    def read(self):
+        self.read_lux = (db.child('pameran').child('lux').get()).val()
+        self.label_lux = Label(self.frame, text=self.read_lux, font=p14, bg=menu, width=9)
+        self.label_lux.place(x=5, y=80)
 
-    menu = monitoring
+        self.read_hum = (db.child('pameran').child('hum').get()).val()
+        self.label_hum = Label(self.frame, text=self.read_hum, font=p14, bg=menu, width=9)
+        self.label_hum.place(x=130, y=80)
+        
+        self.read_temp = (db.child('pameran').child('temp').get()).val()
+        self.label_temp = Label(self.frame, text=self.read_temp, font=p14, bg=menu, width=9)
+        self.label_temp.place(x=5, y=155)
+        
+        self.read_tdsin = (db.child('pameran').child('tdsin').get()).val()
+        self.label_tdsin = Label(self.frame, text=self.read_tdsin, font=p14, bg=menu, width=9)
+        self.label_tdsin.place(x=5, y=230)
+        
+        self.read_tdsout = (db.child('pameran').child('tdsout').get()).val()
+        self.label_tdsout = Label(self.frame, text=self.read_tdsout, font=p14, bg=menu, width=9)
+        self.label_tdsout.place(x=130, y=230)
+        
+        root.after(2000, self.read)
+        
 
-def control():
-    global menu
-    global e3
-    menu.destroy()
-    control = Frame(root,bg=bg_menu, width=width_menu_frame, height=height_menu_frame)
-    control.place(x=310, y=70)
+def sec1():
+    global media
+    media.destroy()
+    screen1 = MenuFrame(root)
+    screen1.place(x=230, y=70)
+    WebcamChoose(screen1, cv2.VideoCapture(2))
+    ColorPicker(screen1)
+    set = Setting(screen1)
+    set.move()
+    read = ReadSensor(screen1, "MEDIA 1")
+    read.read()
+    media = screen1
 
-    b1_true = Button(control, text="ON",font="poppins 10 bold", width=5)
-    b1_true.place(x=20, y=20)
+def sec2():
+    global media
+    media.destroy()
+    screen2 = MenuFrame(root)
+    screen2.place(x=230, y=70)
+    WebcamChoose(screen2, cv2.VideoCapture(4))
+    ColorPicker(screen2)
+    set = Setting(screen2)
+    set.move()
+    read = ReadSensor(screen2, "MEDIA 2")
+    read.read()
+    media = screen2
 
-    b1_false = Button(control, text="OFF", font="poppins 10 bold", width=5)
-    b1_false.place(x=20, y=70)
+def sec3():
+    global media
+    media.destroy()
+    screen3 = MenuFrame(root)
+    screen3.place(x=230, y=70)
+    WebcamChoose(screen3, cv2.VideoCapture(0))
+    ColorPicker(screen3)
+    set = Setting(screen3)
+    set.move()
+    read = ReadSensor(screen3, "MEDIA 3")
+    read.read()
+    media = screen3
 
-    l1_cond = Label(control, text="NO CONDITION", font="poppins 10 bold", width=15, height=3)
-    l1_cond.place(x=100, y=20)
-    def update():
-        global read
-        read = (db.child('data').get()).val()
-        print(read)
-        e3['text'] = str(read)
-        menu_frame.after(1000, update)
-    # b1 = Button(control, text="TEXT A", )
-    e3 = Label(control, text="saya", font="System 5", bg=white, fg=dark)
-    e3.place(x=650/2,y=400/2)
+#sidemenu
+sidemenu = Frame(root, bg=side)
+sidemenu.place(x=0, y=0, width=220, height=600)
+ub = ImageTk.PhotoImage(Image.open('/home/pi/ATPCangar/Pameran/ub.png').resize((80,80), Image.ANTIALIAS))
+Label(sidemenu, image=ub, bg=side).place(x=(220/2)-30, y=30)
+iot = ImageTk.PhotoImage(Image.open('/home/pi/ATPCangar/Pameran/iot black.png').resize((60,60), Image.ANTIALIAS))
+Label(sidemenu, image=iot, bg=side).place(x=(220/2)-80, y=130)
+ubtech = ImageTk.PhotoImage(Image.open('/home/pi/ATPCangar/Pameran/ubtech.png').resize((60,60), Image.ANTIALIAS))
+Label(sidemenu, image=ubtech, bg=side).place(x=(220/2)+20, y=130)
 
-    update()
-    menu = control
+#media
+y = 240
+info = "Media 1", "Media 2", "Media 3"
+cmd = sec1, sec2, sec3
+for i in range(3):
+    Button(sidemenu, text=info[i], border=0, font=p14, bg= bg, fg=side, width=13, cursor='hand2', command=cmd[i]).place(x=10, y=y)
+    y +=60
 
-#top_frame
-top_frame = Frame(root, bg=dark)
-top_frame.place(x=300, y=0, width=width_top_frame, height=height_top_frame)
-Label(top_frame, text="AGROTECHNOPARK", font=judul, bg=dark, fg=white).pack(side=RIGHT, padx=20, pady=10)
-
-#side_menu
-side_menu = Frame(root, bg=bg_side)
-side_menu.place(x=0, y=0, width=width_side_menu, height=height_side_menu)
-logo = Image.open("/home/pi/ATPCangar/ub.png")
-logo = logo.resize((100,100), Image.ANTIALIAS)
-ub = ImageTk.PhotoImage(logo)
-Label(side_menu, image=ub, bg=bg_side).place(x=100, y=50)
-name_user = Label(side_menu, text="USERNAME", font=sub, bg=bg_side, fg=dark)
-name_user.place(x=100, y=170)
-
-#menu
-#profile
-profile_icon = ImageTk.PhotoImage(Image.open('/home/pi/ATPCangar/profile.png').resize((40,40), Image.ANTIALIAS))
-l_profilico = Label(side_menu, image=profile_icon, bg=bg_side)
-l_profilico.place(x=50, y=250)
-btn_profile = Button(side_menu, text="PROFILE", font=sub, bg=bg_side, fg=dark, border=0, bd=0, cursor='hand2', command=profile)
-btn_profile.place(x=110, y=250)
-#monitoring
-monitor_icon = ImageTk.PhotoImage(Image.open('/home/pi/ATPCangar/monitoring.png').resize((40,40), Image.ANTIALIAS))
-l_profilico = Label(side_menu, image=monitor_icon, bg=bg_side)
-l_profilico.place(x=50, y=320)
-btn_profile = Button(side_menu, text="MONITORING", font=sub, bg=bg_side, fg=dark, border=0, bd=0, cursor='hand2', command=monitoring)
-btn_profile.place(x=110, y=320)
-#control
-control_icon = ImageTk.PhotoImage(Image.open('/home/pi/ATPCangar/control.png').resize((40,40), Image.ANTIALIAS))
-l_profilico = Label(side_menu, image=control_icon, bg=bg_side)
-l_profilico.place(x=50, y=390)
-btn_profile = Button(side_menu, text="CONTROL", font=sub, bg=bg_side, fg=dark, border=0, bd=0, cursor='hand2', command=control)
-btn_profile.place(x=110, y=390)
-
-#menu_frame
-menu_frame = Frame(root,bg=bg_menu, width=width_menu_frame, height=height_menu_frame)
-menu_frame.place(x=310, y=70)
-menu = menu_frame
+#topframe
+topframe = Frame(root, bg=bg)
+topframe.place(x=220, y=0, width=1020-220, height=60)
+Label(topframe, text="AGROTECHNOPARK", font=p18, bg=bg, fg=side).pack(side=RIGHT, padx=20, pady=10)
 
 root.mainloop()
